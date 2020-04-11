@@ -16,10 +16,10 @@ public class ColorButtonControl : MonoBehaviour
     /// <param name="Isblack"></param>
     public void Onclick_Button(string color)
     {
-        if (color=="black")
-            GameManager.instance.playercolor = GameManager.whatColor.black;
+        if (color == "black")
+            PlayerPrefs.SetString("PlayerColor", "Black");
         else
-            GameManager.instance.playercolor = GameManager.whatColor.white;
+            PlayerPrefs.SetString("PlayerColor", "White");
         // bool set
         Iscolorpicked = true;
     }

@@ -10,18 +10,13 @@ using UnityEditor;
 /// </summary>
 public class ControlSettingRocks : MonoBehaviour
 {
-    // 기준좌표
-    public int inix = -16;
-    public int iniy = -9;
-
-    // 흰돌, 검은돌, 후보돌
-    public GameObject[] Rocks;
     private GameObject playerrocks; // 플레이어 돌 스프라이트
     private GameObject candidaterocks; // 두기 전 확인 스프라이트.
+    private int inix, iniy;
 
     private Vector2 beforecoord; // 이전 후보군 벡터2
 
-    public new Camera camera;
+    private new Camera camera;
 
     // 한번 터치하면 후보군, 같은데 두번 터치하면 놓기.
     // 플레이어가 뭔돌인지는 gamemanager에 있음
@@ -30,11 +25,14 @@ public class ControlSettingRocks : MonoBehaviour
     void Start()
     {
         if (GameManager.instance.playercolor == GameManager.whatColor.black)
-            playerrocks = Rocks[1];
+            playerrocks = GameManager.instance.Rocks[1];
         else
-            playerrocks = Rocks[0];
+            playerrocks = GameManager.instance.Rocks[0];
 
-        candidaterocks = Rocks[2];
+        candidaterocks = GameManager.instance.Rocks[2];
+
+        inix = GameManager.instance.inix;
+        iniy = GameManager.instance.iniy;
 
         camera = GameObject.FindWithTag("MainCamera").GetComponent<Camera>();
     }
@@ -57,7 +55,7 @@ public class ControlSettingRocks : MonoBehaviour
             if (normalcurpos.x < 0 || normalcurpos.x > GameManager.instance.mapsize || normalcurpos.y < 0 || normalcurpos.y > GameManager.instance.mapsize)
                 return;
             // 해당 위치에 돌이 없어야함.
-            if (GameManager.instance.IsSet[(int)normalcurpos.x, (int)normalcurpos.y])
+            if (GameManager.instance.curmap[(int)normalcurpos.x, (int)normalcurpos.y] != 0)
                 return;
 
 
@@ -82,7 +80,7 @@ public class ControlSettingRocks : MonoBehaviour
                 else
                 {
                     Instantiate(playerrocks, curpos, Quaternion.identity);
-                    GameManager.instance.IsSet[(int)normalcurpos.x, (int)normalcurpos.y] = true;
+                    GameManager.instance.curmap[(int)normalcurpos.x, (int)normalcurpos.y] = 1;
                     // 턴 종료
                     GameManager.instance.IsActionEnded = true;
                 }
