@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System;
 using UnityEngine;
+using System.Threading;
+using System.Threading.Tasks;
+
 
 /// <summary>
 /// AI가 돌을 놓는 것을 컨트롤하는 스크립트.
@@ -10,6 +13,9 @@ public class ControlAISettingRocks : MonoBehaviour
 {
     // singleton
     public static ControlAISettingRocks instance;
+
+    public int depthlimit = INF; // INF로 가면 제한시간 다 쓰는 iterative deepening이다.
+
     public KeyValuePair<int, int> totalcoord; // 최종적으로 돌을 놓을 좌표
     public const int INF = (int)1e9;
     public const int sINF = (int)1e8;
@@ -48,6 +54,19 @@ public class ControlAISettingRocks : MonoBehaviour
 
         Ascorearr = new int[6, 2] { { 0, 0 }, {10,20},{ 1000, 2000 }, { 100000, 200000 }, { 10000000, 20000000 } , { sINF, sINF} };
         Dscorearr = new int[6, 2] { { 0, 0 }, { -30, -40 }, { -2000, -6000 }, { -200000, -600000 }, { -20000000, -60000000 }, { -2*sINF, -2*sINF } };
+
+        depthlimit = GameManager.instance.GameDepthLimit;
+    }
+    /// <summary>
+    /// search에서 찾은 결과를 바탕으로 돌 놓기.
+    /// </summary>
+    public void SetRocks()
+    {
+        // 돌 놓기
+        Vector2 curpos = new Vector2(totalcoord.Key + GameManager.instance.inix, totalcoord.Value + GameManager.instance.iniy);
+        Instantiate(AIrocks, curpos, Quaternion.identity);
+        GameManager.instance.curmap[totalcoord.Key, totalcoord.Value] = 2;
+        GameManager.instance.IsAIActionEnded = true;
     }
 
     public void Search()
@@ -59,15 +78,14 @@ public class ControlAISettingRocks : MonoBehaviour
 
         // iterative deepening
 
-        int testdepthlimit = 1;
+        int totalscore = -INF;
 
-
-        for(int depth=1;depth <= testdepthlimit && GameManager.instance.timer > 0f; depth++)
+        for (int depth=1;depth <= depthlimit && GameManager.instance.timer > 0f; depth++)
         {
-            int totalscore;
             Node initialnode = new Node(MaxMIn.max);
             initialnode.coord = new KeyValuePair<int, int>(-1, -1); // initial node 표시
-            totalscore = alphabetaAlg(initialnode, depth, 2, -INF, INF);
+
+            totalscore = Math.Max(totalscore, alphabetaAlg(initialnode, depth, 2, -INF, INF));
 
             //Debug.Log("totalscore : " + totalscore);
 
@@ -85,13 +103,9 @@ public class ControlAISettingRocks : MonoBehaviour
             }
         }
 
-       // Debug.Log("totalcoord : " + totalcoord.Key + " " + totalcoord.Value);
 
-        // 돌 놓기
-        Vector2 curpos = new Vector2(totalcoord.Key + GameManager.instance.inix, totalcoord.Value + GameManager.instance.iniy);
-        Instantiate(AIrocks, curpos, Quaternion.identity);
-        GameManager.instance.curmap[totalcoord.Key, totalcoord.Value] = 2;
-        GameManager.instance.IsAIActionEnded = true;
+        
+
     }
 
     // alpha-beta pruning alg with iterative deepening
@@ -108,8 +122,7 @@ public class ControlAISettingRocks : MonoBehaviour
         if(depth==0 || GameManager.instance.timer <= 0f)
         {
             // 현재 searchmap으로 결정.
-            node.bestvalue = Newheuristic();
-            return node.bestvalue;
+            return node.bestvalue = Newheuristic();
         }
 
         if (player == 2)
@@ -133,6 +146,8 @@ public class ControlAISettingRocks : MonoBehaviour
 
                         if (alpha >= beta)
                             break;
+
+                        // 이게 여기 있어야 하나?
                         if(GameManager.instance.timer <= 0f)
                             return node.bestvalue;
                     }
@@ -159,6 +174,8 @@ public class ControlAISettingRocks : MonoBehaviour
 
                         if (alpha >= beta)
                             break;
+
+                        // 이게 여기 있어야 하나?
                         if (GameManager.instance.timer <= 0f)
                             return node.bestvalue;
                     }
@@ -173,7 +190,7 @@ public class ControlAISettingRocks : MonoBehaviour
     /// </summary>
     /// <param name="num"></param>
     /// <returns></returns>
-    bool oneIsinmap(int num)
+    public bool oneIsinmap(int num)
     {
         return num >= 0 && num < mapsize + 1;
     }
@@ -183,13 +200,18 @@ public class ControlAISettingRocks : MonoBehaviour
     /// </summary>
     /// <param name="coord"></param>
     /// <returns></returns>
-    bool twoIsinmap(Pair coord)
+    public bool twoIsinmap(Pair coord)
     {
         return coord.x >= 0 && coord.x < mapsize + 1 && coord.y >= 0 && coord.y < mapsize + 1;
     }
 
+    /// <summary>
+    /// 연산 많은 함수. thread 적용해야 할듯하다.
+    /// </summary>
+    /// <returns></returns>
     int Newheuristic()
     {
+
         // 개량 휴리스틱 함수
         // 현재 맵 상태(searchmap)을 바탕으로 AI에게 얼마나 유리한지 점수 매겨서 반환
         int score = 0;
@@ -252,7 +274,7 @@ public class ControlAISettingRocks : MonoBehaviour
                         {
                             start.x++;
 
-                            if (searchmap[scoord.y, scoord.x] != 2)
+                            if (searchmap[start.y, start.x] != 2)
                             {
                                 Issequential = false;
                                 break;
@@ -281,9 +303,12 @@ public class ControlAISettingRocks : MonoBehaviour
                     if (cnt == 3 && ((scoord.x - 1 >= 0 && searchmap[scoord.y, scoord.x - 1] == 0) && (lcoord.x + 1 < mapsize + 1 && searchmap[lcoord.y, lcoord.x + 1] == 0)))
                     {
 
-                        if ((scoord.x - 2 >= 0 && searchmap[scoord.y, scoord.x - 2] == 0) && (lcoord.x + 2 < mapsize + 1 && searchmap[lcoord.y, lcoord.x + 2] == 0))
+                        if (Mathf.Abs(lcoord.x - scoord.x) == 2 || ((scoord.x - 2 >= 0 && searchmap[scoord.y, scoord.x - 2] == 0) || (lcoord.x + 2 < mapsize + 1 && searchmap[lcoord.y, lcoord.x + 2] == 0)))
                         {
                             // 해당되는 좌표 모두 samsam처리
+
+                            Asamsam[scoord.y, scoord.x]++;
+
                             do
                             {
                                 scoord.x++;
@@ -345,7 +370,7 @@ public class ControlAISettingRocks : MonoBehaviour
                         {
                             start.y++;
 
-                            if (searchmap[scoord.y, scoord.x] != 2)
+                            if (searchmap[start.y, start.x] != 2)
                             {
                                 Issequential = false;
                                 break;
@@ -374,10 +399,12 @@ public class ControlAISettingRocks : MonoBehaviour
                     if (cnt == 3 && ((scoord.y - 1 >= 0 && searchmap[scoord.y - 1, scoord.x] == 0) && (lcoord.y + 1 < mapsize + 1 && searchmap[lcoord.y + 1, lcoord.x] == 0)))
                     {
 
-                        if ((scoord.y - 2 >= 0 && searchmap[scoord.y - 2, scoord.x] == 0) && (lcoord.y + 2 < mapsize + 1 && searchmap[lcoord.y + 2, lcoord.x] == 0))
+
+                        if (Mathf.Abs(lcoord.y - scoord.y) == 2 || ((scoord.y - 2 >= 0 && searchmap[scoord.y - 2, scoord.x] == 0) || (lcoord.y + 2 < mapsize + 1 && searchmap[lcoord.y + 2, lcoord.x] == 0)))
                         {
                             // 해당되는 좌표 모두 samsam처리
 
+                            Asamsam[scoord.y, scoord.x]++;
                             do
                             {
                                 scoord.y++;
@@ -441,7 +468,7 @@ public class ControlAISettingRocks : MonoBehaviour
                             start.y++;
                             start.x++;
 
-                            if (searchmap[scoord.y, scoord.x] != 2)
+                            if (searchmap[start.y, start.x] != 2)
                             {
                                 Issequential = false;
                                 break;
@@ -470,9 +497,12 @@ public class ControlAISettingRocks : MonoBehaviour
                     if (cnt == 3 && ((twoIsinmap(new Pair(scoord.y - 1, scoord.x - 1)) && searchmap[scoord.y - 1, scoord.x - 1] == 0) && (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x + 1)) && searchmap[lcoord.y + 1, lcoord.x + 1] == 0)))
                     {
 
-                        if ((twoIsinmap(new Pair(scoord.y - 2, scoord.x - 2)) && searchmap[scoord.y - 2, scoord.x - 2] == 0) && (twoIsinmap(new Pair(lcoord.y + 2, lcoord.x + 2)) && searchmap[lcoord.y + 2, lcoord.x + 2] == 0))
+                        if (Mathf.Abs(lcoord.y - scoord.y) == 2 || ((ControlAISettingRocks.instance.twoIsinmap(new Pair(scoord.y - 2, scoord.x - 2)) && (searchmap[scoord.y - 2, scoord.x - 2] == 0)) ||
+                          (ControlAISettingRocks.instance.twoIsinmap(new Pair(lcoord.y + 2, lcoord.x + 2)) && (searchmap[lcoord.y + 2, lcoord.x + 2] == 0))))
                         {
                             // 해당되는 좌표 모두 samsam처리
+
+                            Asamsam[scoord.y, scoord.x]++;
 
                             do
                             {
@@ -539,7 +569,7 @@ public class ControlAISettingRocks : MonoBehaviour
                             start.y++;
                             start.x--;
 
-                            if (searchmap[scoord.y, scoord.x] != 2)
+                            if (searchmap[start.y, start.x] != 2)
                             {
                                 Issequential = false;
                                 break;
@@ -568,9 +598,12 @@ public class ControlAISettingRocks : MonoBehaviour
                     if (cnt == 3 && ((twoIsinmap(new Pair(scoord.y - 1, scoord.x + 1)) && searchmap[scoord.y - 1, scoord.x + 1] == 0) && (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x - 1)) && searchmap[lcoord.y + 1, lcoord.x - 1] == 0)))
                     {
 
-                        if ((twoIsinmap(new Pair(scoord.y - 2, scoord.x + 2)) && searchmap[scoord.y - 2, scoord.x + 2] == 0) && (twoIsinmap(new Pair(lcoord.y + 2, lcoord.x - 2)) && searchmap[lcoord.y + 2, lcoord.x - 2] == 0))
+                        if (Mathf.Abs(lcoord.y - scoord.y) == 2 || ((ControlAISettingRocks.instance.twoIsinmap(new Pair(scoord.y - 2, scoord.x + 2)) && (searchmap[scoord.y - 2, scoord.x + 2] == 0)) ||
+                           (ControlAISettingRocks.instance.twoIsinmap(new Pair(lcoord.y + 2, lcoord.x - 2)) && (searchmap[lcoord.y + 2, lcoord.x - 2] == 0))))
                         {
                             // 해당되는 좌표 모두 samsam처리
+
+                            Asamsam[scoord.y, scoord.x]++;
 
                             do
                             {
@@ -653,7 +686,7 @@ public class ControlAISettingRocks : MonoBehaviour
                         {
                             start.x++;
 
-                            if (searchmap[scoord.y, scoord.x] != 1)
+                            if (searchmap[start.y, start.x] != 1)
                             {
                                 Issequential = false;
                                 break;
@@ -682,9 +715,12 @@ public class ControlAISettingRocks : MonoBehaviour
                     if (cnt == 3 && ((scoord.x - 1 >= 0 && searchmap[scoord.y, scoord.x - 1] == 0) && (lcoord.x + 1 < mapsize + 1 && searchmap[lcoord.y, lcoord.x + 1] == 0)))
                     {
 
-                        if ((scoord.x - 2 >= 0 && searchmap[scoord.y, scoord.x - 2] == 0) && (lcoord.x + 2 < mapsize + 1 && searchmap[lcoord.y, lcoord.x + 2] == 0))
+                        if (Mathf.Abs(lcoord.x - scoord.x) == 2 || ((scoord.x - 2 >= 0 && searchmap[scoord.y, scoord.x - 2] == 0) || (lcoord.x + 2 < mapsize + 1 && searchmap[lcoord.y, lcoord.x + 2] == 0)))
                         {
                             // 해당되는 좌표 모두 samsam처리
+
+                            Dsamsam[scoord.y, scoord.x]++;
+
                             do
                             {
                                 scoord.x++;
@@ -746,7 +782,7 @@ public class ControlAISettingRocks : MonoBehaviour
                         {
                             start.y++;
 
-                            if (searchmap[scoord.y, scoord.x] != 1)
+                            if (searchmap[start.y, start.x] != 1)
                             {
                                 Issequential = false;
                                 break;
@@ -775,10 +811,11 @@ public class ControlAISettingRocks : MonoBehaviour
                     if (cnt == 3 && ((scoord.y - 1 >= 0 && searchmap[scoord.y - 1, scoord.x] == 0) && (lcoord.y + 1 < mapsize + 1 && searchmap[lcoord.y + 1, lcoord.x] == 0)))
                     {
 
-                        if ((scoord.y - 2 >= 0 && searchmap[scoord.y - 2, scoord.x] == 0) && (lcoord.y + 2 < mapsize + 1 && searchmap[lcoord.y + 2, lcoord.x] == 0))
+                        if (Mathf.Abs(lcoord.y - scoord.y) == 2 || ((scoord.y - 2 >= 0 && searchmap[scoord.y - 2, scoord.x] == 0) || (lcoord.y + 2 < mapsize + 1 && searchmap[lcoord.y + 2, lcoord.x] == 0)))
                         {
                             // 해당되는 좌표 모두 samsam처리
 
+                            Dsamsam[scoord.y, scoord.x]++;
                             do
                             {
                                 scoord.y++;
@@ -842,7 +879,7 @@ public class ControlAISettingRocks : MonoBehaviour
                             start.y++;
                             start.x++;
 
-                            if (searchmap[scoord.y, scoord.x] != 1)
+                            if (searchmap[start.y, start.x] != 1)
                             {
                                 Issequential = false;
                                 break;
@@ -871,10 +908,12 @@ public class ControlAISettingRocks : MonoBehaviour
                     if (cnt == 3 && ((twoIsinmap(new Pair(scoord.y - 1, scoord.x - 1)) && searchmap[scoord.y - 1, scoord.x - 1] == 0) && (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x + 1)) && searchmap[lcoord.y + 1, lcoord.x + 1] == 0)))
                     {
 
-                        if ((twoIsinmap(new Pair(scoord.y - 2, scoord.x - 2)) && searchmap[scoord.y - 2, scoord.x - 2] == 0) && (twoIsinmap(new Pair(lcoord.y + 2, lcoord.x + 2)) && searchmap[lcoord.y + 2, lcoord.x + 2] == 0))
+                        if (Mathf.Abs(lcoord.y - scoord.y) == 2 || ((ControlAISettingRocks.instance.twoIsinmap(new Pair(scoord.y - 2, scoord.x - 2)) && (searchmap[scoord.y - 2, scoord.x - 2] == 0)) ||
+                          (ControlAISettingRocks.instance.twoIsinmap(new Pair(lcoord.y + 2, lcoord.x + 2)) && (searchmap[lcoord.y + 2, lcoord.x + 2] == 0))))
                         {
                             // 해당되는 좌표 모두 samsam처리
 
+                            Dsamsam[scoord.y, scoord.x]++;
                             do
                             {
                                 scoord.y++;
@@ -939,7 +978,7 @@ public class ControlAISettingRocks : MonoBehaviour
                             start.y++;
                             start.x--;
 
-                            if (searchmap[scoord.y, scoord.x] != 1)
+                            if (searchmap[start.y, start.x] != 1)
                             {
                                 Issequential = false;
                                 break;
@@ -968,9 +1007,12 @@ public class ControlAISettingRocks : MonoBehaviour
                     if (cnt == 3 && ((twoIsinmap(new Pair(scoord.y - 1, scoord.x + 1)) && searchmap[scoord.y - 1, scoord.x + 1] == 0) && (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x - 1)) && searchmap[lcoord.y + 1, lcoord.x - 1] == 0)))
                     {
 
-                        if ((twoIsinmap(new Pair(scoord.y - 2, scoord.x + 2)) && searchmap[scoord.y - 2, scoord.x + 2] == 0) && (twoIsinmap(new Pair(lcoord.y + 2, lcoord.x - 2)) && searchmap[lcoord.y + 2, lcoord.x - 2] == 0))
+                        if (Mathf.Abs(lcoord.y - scoord.y) == 2 || ((ControlAISettingRocks.instance.twoIsinmap(new Pair(scoord.y - 2, scoord.x + 2)) && (searchmap[scoord.y - 2, scoord.x + 2] == 0)) ||
+                          (ControlAISettingRocks.instance.twoIsinmap(new Pair(lcoord.y + 2, lcoord.x - 2)) && (searchmap[lcoord.y + 2, lcoord.x - 2] == 0))))
                         {
                             // 해당되는 좌표 모두 samsam처리
+
+                            Dsamsam[scoord.y, scoord.x]++;
 
                             do
                             {

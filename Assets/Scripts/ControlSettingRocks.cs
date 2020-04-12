@@ -79,8 +79,9 @@ public class ControlSettingRocks : MonoBehaviour
                 // 같은 후보군이었으면 바로 돌 놓기
                 else
                 {
-                    Instantiate(playerrocks, curpos, Quaternion.identity);
                     GameManager.instance.curmap[(int)normalcurpos.x, (int)normalcurpos.y] = 1;
+
+                    Instantiate(playerrocks, curpos, Quaternion.identity);
                     // 턴 종료
                     GameManager.instance.IsActionEnded = true;
                 }

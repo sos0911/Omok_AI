@@ -10,6 +10,7 @@ public class ControlUI : MonoBehaviour
     public Text playerturntext;
     public Text lefttimetext;
     public GameObject GameoverPanel;
+    public GameObject ThinkingAIText;
 
     private Text WhowinsText;
 
@@ -34,11 +35,15 @@ public class ControlUI : MonoBehaviour
 
     public void UIchangeGameoverText(string str)
     {
-        GameoverPanel.SetActive(true);
         if (str == "Draw")
             WhowinsText.text = "Draw!";
         else
             WhowinsText.text = str + " wins!";
+
+        if (GameManager.instance.Issamsam)
+            WhowinsText.text += "\n3*3 금수를 어기셨습니다.";
+
+        GameoverPanel.SetActive(true);
     }
 
 
@@ -46,5 +51,14 @@ public class ControlUI : MonoBehaviour
     {
         GameManager.instance.gameObject.SetActive(true);
         SceneManager.LoadScene("Main");
+    }
+
+    public void ToggleThingkingAIText()
+    {
+        if (GameManager.instance.curplayerturn)
+            ThinkingAIText.SetActive(false);
+        else
+            ThinkingAIText.SetActive(true);
+
     }
 }

@@ -7,6 +7,9 @@ using UnityEngine.SceneManagement;
 public class ColorButtonControl : MonoBehaviour
 {
     public TextMeshProUGUI warningtext;
+    public TMP_InputField limitsecondfield;
+    public TMP_InputField DepthLimitField;
+
     // 플레이어가 색을 집었나?
     public bool Iscolorpicked = false;
 
@@ -38,5 +41,18 @@ public class ColorButtonControl : MonoBehaviour
         {
             warningtext.gameObject.SetActive(true);
         }
+    }
+
+    /// <summary>
+    /// 사용자가 턴당 제한시간 입력을 끝내면 호출됨
+    /// </summary>
+    public void OnEndEditLimitSeconds()
+    {
+        PlayerPrefs.SetInt("Turnlimit", int.Parse(limitsecondfield.text));
+    }
+
+    public void OnEndEditDepthLimit()
+    {
+        PlayerPrefs.SetInt("Depthlimit", int.Parse(DepthLimitField.text));
     }
 }
