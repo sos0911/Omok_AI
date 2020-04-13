@@ -16,15 +16,20 @@ public class ControlAISettingRocks : MonoBehaviour
 
     public int depthlimit = INF; // INF로 가면 제한시간 다 쓰는 iterative deepening이다.
 
+    public bool scorenullify = false; // 지금 내놓은 답이 무효인가? (타이머가 다돼서 나올때)
+
+
     public KeyValuePair<int, int> totalcoord; // 최종적으로 돌을 놓을 좌표
-    public const int INF = (int)1e9;
-    public const int sINF = (int)1e8;
+    public const int INF = (int)1e8;
+    public const long LINF = (long)1e18;
+    public const long sLINF = (long)1e17;
+    public const long ssLINF = (long)1e16;
 
     // search 동안 그때마다의 맵으로 쓸 2차원 배열
     int[,] searchmap;
     // [연속수, 닫/열] score (공,방)
     // 방어하지 못할때 차감되는 걸 조금 높게 한다.
-    int[,] Ascorearr, Dscorearr; 
+    long[,] Ascorearr, Dscorearr; 
 
     private GameObject AIrocks; // AI 돌 color sprite
 
@@ -48,14 +53,15 @@ public class ControlAISettingRocks : MonoBehaviour
         searchmap = new int[mapsize + 1, mapsize + 1];
         // score배열 초기화
         // 6목 이상은 3000점이다.
-        
+
         // 한쪽만 막힌거하고 두쪽 다막힌거하고 구분해야 한다(;;)
         // 두쪽 다막힌건 score=0으로 처리, 배열에서는 한쪽열림과 완전열림 구분.
 
-        Ascorearr = new int[6, 2] { { 0, 0 }, {10,20},{ 1000, 2000 }, { 100000, 200000 }, { 10000000, 20000000 } , { sINF, sINF} };
-        Dscorearr = new int[6, 2] { { 0, 0 }, { -30, -40 }, { -2000, -6000 }, { -200000, -600000 }, { -20000000, -60000000 }, { -2*sINF, -2*sINF } };
+        Ascorearr = new long[6, 2] { { 0, 0 }, { (long)1e2, (long)2e2 }, { (long)1e5, (long)2e5 }, { (long)1e8, (long)2e8 }, { (long)1e11, (long)2e11}, { (long)1e14, (long)2e14} };
+        Dscorearr = new long[6, 2] { { 0, 0 }, { (long)-2e4, (long)-6e4 }, { (long)-2e7, (long)-6e7 }, { (long)-2e10, (long)-6e10 }, { (long)-2e13, (long)-6e13 }, { (long)-2e16, (long)-6e16 } };
 
-        depthlimit = GameManager.instance.GameDepthLimit;
+        if(GameManager.instance != null)
+            depthlimit = GameManager.instance.GameDepthLimit;
     }
     /// <summary>
     /// search에서 찾은 결과를 바탕으로 돌 놓기.
@@ -78,48 +84,77 @@ public class ControlAISettingRocks : MonoBehaviour
 
         // iterative deepening
 
-        int totalscore = -INF;
+        long totalscore = -sLINF;
+        int depth = 1;
+        int bestdepth = depth;
 
-        for (int depth=1;depth <= depthlimit && GameManager.instance.timer > 0f; depth++)
+        for (depth=1;depth <= depthlimit && GameManager.instance.timer > 0f; depth++)
         {
+
             Node initialnode = new Node(MaxMIn.max);
             initialnode.coord = new KeyValuePair<int, int>(-1, -1); // initial node 표시
 
-            totalscore = Math.Max(totalscore, alphabetaAlg(initialnode, depth, 2, -INF, INF));
+            long thisdepthscore = alphabetaAlg(initialnode, depth, 2, -LINF, LINF);
 
-            //Debug.Log("totalscore : " + totalscore);
+            // 이번에 얻은 점수가 이전에 얻은 최고 점수를 넘었을 때만 갱신한다.
 
-            // initialnode에 저장된 bestvalue 갖는 child를 찾아 그 안 coord를 빼옴.
-            foreach (Node child in initialnode.childlist)
+            if (scorenullify)
+                break;
+
+            if (thisdepthscore > totalscore)
             {
+                totalscore = thisdepthscore;
+                bestdepth = depth;
 
-              //  Debug.Log("child : (" + child.coord.Key + "," + child.coord.Value + ") :: " + child.bestvalue);
+                //Debug.Log("depth : " + depth + " score : " + totalscore);
 
-                if (child.bestvalue == totalscore)
+                // initialnode에 저장된 bestvalue 갖는 child를 찾아 그 안 coord를 빼옴.
+                foreach (Node child in initialnode.childlist)
                 {
-                    totalcoord = new KeyValuePair<int, int>(child.coord.Key, child.coord.Value);
-                    break;
+
+                    //  Debug.Log("child : (" + child.coord.Key + "," + child.coord.Value + ") :: " + child.bestvalue);
+
+                    if (child.bestvalue == totalscore)
+                    {
+                        totalcoord = new KeyValuePair<int, int>(child.coord.Key, child.coord.Value);
+                        break;
+                    }
                 }
+
+                //Debug.Log("coord : " + totalcoord.Key + "," + totalcoord.Value);
+
             }
+
+
         }
-
-
         
+
+        //Debug.Log("final depth : " + bestdepth + " score : " + totalscore);
+        //Debug.Log("final coord : " + totalcoord.Key + "," + totalcoord.Value);
+
+        scorenullify = false;
 
     }
 
     // alpha-beta pruning alg with iterative deepening
 
 
-    int alphabetaAlg(Node node, int depth, int player, int alpha, int beta)
+    long alphabetaAlg(Node node, int depth, int player, long alpha, long beta)
     {
         //Debug.Log("alphabetaalg : (" + node.coord.Key + "," + node.coord.Value + ") " + depth + " " + player);
         // alpha-beta pruning을 진행하는 함수
         // 자기가 찾은 bestscore을 return한다.
         // 앞으로 depth 수만큼 예상한다.
 
-        // 만약 타이머가 다 되었거나 깊이가 다 되면 바로 status의 score을 매긴다.
-        if(depth==0 || GameManager.instance.timer <= 0f)
+        // 타이머가 다 되면 무효화하고 종료.
+        if(GameManager.instance.timer <= 0f)
+        {
+            scorenullify = true;
+            return 0;
+        }
+
+        // 깊이가 다 되면 바로 status의 score을 매긴다.
+        if(depth==0)
         {
             // 현재 searchmap으로 결정.
             return node.bestvalue = Newheuristic();
@@ -131,26 +166,34 @@ public class ControlAISettingRocks : MonoBehaviour
             for (int i = 0; i < mapsize + 1; i++)
                 for (int j = 0; j < mapsize + 1; j++)
                 {
+
                     if (searchmap[i, j] == 0) 
                     {
                         // [i,j]에 놓기 가능
                         Node child = new Node(MaxMIn.min);
                         child.coord = new KeyValuePair<int, int>(i, j);
                         node.childlist.Add(child);
+
                         searchmap[i, j] = 2;
 
                         node.bestvalue = Math.Max(node.bestvalue, alphabetaAlg(child, depth - 1, 1, alpha, beta));
-                        alpha = Math.Max(alpha, node.bestvalue);
 
                         searchmap[i, j] = 0;
 
-                        if (alpha >= beta)
-                            break;
+                        alpha = Math.Max(alpha, node.bestvalue);
 
-                        // 이게 여기 있어야 하나?
-                        if(GameManager.instance.timer <= 0f)
+                        if (GameManager.instance.timer <= 0f)
+                        {
+                            scorenullify = true;
+                            return 0;
+                        }
+
+                        // pruning.
+                        if (alpha >= beta)
                             return node.bestvalue;
+                       
                     }
+
                 }
         }
         else
@@ -165,20 +208,27 @@ public class ControlAISettingRocks : MonoBehaviour
                         Node child = new Node(MaxMIn.max);
                         child.coord = new KeyValuePair<int, int>(i, j);
                         node.childlist.Add(child);
+
                         searchmap[i, j] = 1;
 
                         node.bestvalue = Math.Min(node.bestvalue, alphabetaAlg(child, depth - 1, 1, alpha, beta));
-                        beta = Math.Min(beta, node.bestvalue);
 
                         searchmap[i, j] = 0;
 
-                        if (alpha >= beta)
-                            break;
+                        beta = Math.Min(beta, node.bestvalue);
 
-                        // 이게 여기 있어야 하나?
                         if (GameManager.instance.timer <= 0f)
+                        {
+                            scorenullify = true;
+                            return 0;
+                        }
+
+                        // pruning.
+                        if (alpha >= beta)
                             return node.bestvalue;
+
                     }
+
                 }
         }
 
@@ -209,12 +259,12 @@ public class ControlAISettingRocks : MonoBehaviour
     /// 연산 많은 함수. thread 적용해야 할듯하다.
     /// </summary>
     /// <returns></returns>
-    int Newheuristic()
+    long Newheuristic()
     {
 
         // 개량 휴리스틱 함수
         // 현재 맵 상태(searchmap)을 바탕으로 AI에게 얼마나 유리한지 점수 매겨서 반환
-        int score = 0;
+        long score = 0;
         // 지금 둔 것으로 AI가 오목이나 금수(33)이 되면 sINF, -sINF set.
         // 또, 6목은 둘 수는 있으나 승리 조건으로 인식되지 않는다.
         // mapsize : 20*20 (둘 수 있는 가짓수)
@@ -527,7 +577,7 @@ public class ControlAISettingRocks : MonoBehaviour
                 {
                     int cnt = 1, zerocnt = 0;
                     int k = 1;
-
+                        
                     // 구간의 시작과 끝 좌표.
                     Pair scoord = new Pair(i, j);
                     Pair lcoord = new Pair(i, j);
@@ -1036,13 +1086,23 @@ public class ControlAISettingRocks : MonoBehaviour
                 if (Dsamsam[i, j] >= 2)
                     score += Ascorearr[5,1];
 
-        return score;
+        // ===========================================================================
 
+        // 마지막으로, 초기에 중앙에 두게 하기 위해 약간의 +- 적용
+
+        int middleidx = (mapsize+1) / 2;
+
+        for (int i = 0; i < mapsize + 1; i++)
+            for (int j = 0; j < mapsize + 1; j++)
+                if (searchmap[i, j] == 2)
+                    score -= Mathf.Abs(middleidx - i) + Mathf.Abs(middleidx - j);
+
+        return score;
     }
-    int heuristic()
+    long heuristic()
     {
         // 현재 맵 상태(searchmap)을 바탕으로 AI에게 얼마나 유리한지 점수 매겨서 반환
-        int score = 0;
+        long score = 0;
         // 지금 둔 것으로 AI가 오목이나 금수(33)이 되면 INF, -INF set.
         // 또, 6목은 둘 수는 있으나 승리 조건으로 인식되지 않는다.
         // mapsize : 20*20 (둘 수 있는 가짓수)
@@ -1064,6 +1124,8 @@ public class ControlAISettingRocks : MonoBehaviour
 
         int[,] Across = new int[mapsize + 1, mapsize + 1];
         int[,] Dcross = new int[mapsize + 1, mapsize + 1];
+
+        
 
         // 공격(가로)
         for (int i=0;i<mapsize+1;i++)
@@ -1486,7 +1548,7 @@ public class ControlAISettingRocks : MonoBehaviour
                 }
                 // 금수 3*3
                 else if (Across[i, j] >= 2)
-                    score -= sINF;
+                    score -= sLINF;
             }
 
         // Across 초기화
@@ -2234,7 +2296,7 @@ public class ControlAISettingRocks : MonoBehaviour
                 }
                 // 금수 3*3
                 else if (Dcross[i, j] >= 2)
-                    score += sINF;
+                    score += sLINF;
             }
 
         // Dcross 초기화

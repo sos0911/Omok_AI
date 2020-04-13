@@ -31,18 +31,18 @@ public class GameManager : MonoBehaviour
 
     public int GameDepthLimit = INF; // 게임에서의 AI search 제한깊이
 
-    public bool beplayerturn; // 바로 전 턴 플레이어 턴?
     public bool curplayerturn; // 이번 턴 플레이어 턴?
 
-    private bool IsStart = true; // 게임이 막 시작했나? 
+    public bool Isturnchanging = false; // 턴체인지 및 우승조건 작업중인가?
+
     public bool IsgameOver = false; // 게임이 끝났나?
 
-    public bool IsActionEnded = false; // 돌 놓기가 끝났나?
-    public bool IsAIActionEnded = false; // AI 돌 놓기가 끝났나?
+    public bool IsActionEnded; // 돌 놓기가 끝났나?
+    public bool IsAIActionEnded; // AI 돌 놓기가 끝났나?
 
     public bool Issamsam = false; // player가 3*3금수를 어겼나?
 
-    public float timer = 0; // 남은 시간.
+    public float timer = 0f; // 남은 시간.
     public float turntime = 60f; // 한 턴 시간.
 
     private ControlUI controlUI; // UI control 위임할 스크립트.
@@ -64,21 +64,38 @@ public class GameManager : MonoBehaviour
             for (int j = 0; j <= mapsize; j++)
                 curmap[i, j] = 0;
 
+
         playercolor = PlayerPrefs.GetString("PlayerColor") == "Black" ? whatColor.black : whatColor.white;
+        // 처음 턴 결정. changeturn으로 이 정보가 반대로 바뀐다.
+        curplayerturn = playercolor == whatColor.black ? false : true;
+        IsActionEnded = true;
+        IsAIActionEnded = true;
+
+
+
         turntime = PlayerPrefs.GetInt("Turnlimit");
+
         if (PlayerPrefs.GetInt("Depthlimit") >= 1)
             GameDepthLimit = PlayerPrefs.GetInt("Depthlimit");
+
     }
 
 
+
     // Update is called once per frame
+    // 아 이거 update 구성이 문제다..
+
     async void Update()
     {
         // 시작 화면 말고 안으로 들어온 후 게임 시작됨.
+        // AI의 턴일때 action이 끝나야 함(timer와는 상관없이)
+        // player의 턴일때는 timer < 0 or turnended
         if (!IsgameOver)
         {
-            if (timer <= 0 || IsActionEnded || IsAIActionEnded)
+            if (!Isturnchanging && (IsActionEnded || IsAIActionEnded))
             {
+                Isturnchanging = true;
+
                 WhoWin winside = DecideWhoWin();
               if(winside != WhoWin.Unknown)
                 {
@@ -98,19 +115,21 @@ public class GameManager : MonoBehaviour
                 }
 
                 ChangeTurn();
+
+                Isturnchanging = false;
+
                 if (!curplayerturn)
                 {
-
-
+                    
                     var task = Task.Run(() => ControlAISettingRocks.instance.Search());
 
                     await task;
-
+                    
                     // Debug.Log("totalcoord : " + ControlAISettingRocks.instance.totalcoord.Key + " " + ControlAISettingRocks.instance.totalcoord.Value);
 
-                    // AI가 생각하는 표시를 내준다.(UI)
-
+                    // setrock이 끝나면 isAIactionended = true
                     ControlAISettingRocks.instance.SetRocks();
+
                 }
             }
             else
@@ -127,16 +146,16 @@ public class GameManager : MonoBehaviour
     void ChangeTurn()
     {
         // turn bool flag 초기화
-        if (curplayerturn)
-            IsActionEnded = false;
-        else
-            IsAIActionEnded = false;
-
+        IsActionEnded = false;
+        IsAIActionEnded = false;
 
         Issamsam = false;
         timer = turntime;
-        beplayerturn = curplayerturn;
-        DecideWhosturn();
+
+        curplayerturn = !curplayerturn;
+
+        //Debug.Log(" curplayerturn : " + curplayerturn);
+
         if (curplayerturn)
         {
             controlUI.UIchangePlayerturn("플레이어 턴");
@@ -149,22 +168,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 이번 턴이 누구 턴인지 결정
-    /// </summary>
-    void DecideWhosturn()
-    {
-        if (IsStart)
-        {
-            if (playercolor == whatColor.black)
-                beplayerturn = false;
-            else
-                beplayerturn = true;
-            IsStart = false;
-        }
-        curplayerturn = !beplayerturn;
-    }
-
+   
     /// <summary>
     /// main 씬에서 UI 담당할 스크립트 가져오기
     /// </summary>

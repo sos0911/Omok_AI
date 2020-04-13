@@ -87,5 +87,9 @@ public class ControlSettingRocks : MonoBehaviour
                 }
             }
         }
+
+        // 시간 다되도 actionended
+        if (!GameManager.instance.IsActionEnded && GameManager.instance.curplayerturn && GameManager.instance.timer < 0)
+            GameManager.instance.IsActionEnded = true;
     }
 }
