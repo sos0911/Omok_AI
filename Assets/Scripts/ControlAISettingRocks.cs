@@ -311,15 +311,15 @@ public class ControlAISettingRocks : MonoBehaviour
 
                     // 오목은 따로 계산한다.
                     // 아예 양쪽이 닫힌 오목이어도 점수를 얻는다.
-                    // 단 5개가 연속으로 있어야 하고 양옆에 같은 돌이 없어야 한다.
-                    if (cnt == 5)
+                    // 단 5개가 연속으로 있어야 하고 양옆에 같은 돌이 없던지 구석데기여야 한다.
+
+                    Pair start = new Pair(scoord.y, scoord.x);
+                    Pair end = new Pair(lcoord.y, lcoord.x);
+
+                    bool Issequential = true; // 5개 연속인가?
+
+                    if (cnt != 1)
                     {
-                        // 연속이 끊기면 거기까지 점수로 인정한다.
-                        Pair start = new Pair(scoord.y, scoord.x);
-                        Pair end = new Pair(lcoord.y, lcoord.x);
-
-                        bool Issequential = true; // 5개 연속인가?
-
                         do
                         {
                             start.x++;
@@ -332,18 +332,25 @@ public class ControlAISettingRocks : MonoBehaviour
 
                         }
                         while (start != end);
+                    }
 
-                        if (Issequential && ((scoord.x - 1 >= 0 && searchmap[scoord.y, scoord.x - 1] != 2) && (lcoord.x + 1 < mapsize + 1 && searchmap[lcoord.y, lcoord.x + 1] != 2)))
+                    if (cnt == 5)
+                    {
+                        // 연속이 끊기면 거기까지 점수로 인정한다.
+                      
+
+                        if (Issequential && (scoord.x-1 < 0 || (scoord.x - 1 >= 0 && searchmap[scoord.y, scoord.x - 1] != 2)) && (lcoord.x+1 >= mapsize+1 || (lcoord.x + 1 < mapsize + 1 && searchmap[lcoord.y, lcoord.x + 1] != 2)))
                             score += Ascorearr[cnt,1];
                     }
 
                     if (cnt < 5)
                     {
+                        // cnt가 같아도 한칸 공백을 포함한 것과 연속인 건 연속인게 더 유리하다.
 
                         if ((scoord.x - 1 >= 0 && searchmap[scoord.y, scoord.x - 1] == 0) && (lcoord.x + 1 < mapsize + 1 && searchmap[lcoord.y, lcoord.x + 1] == 0))
-                            score += Ascorearr[cnt, 1];
+                            score += Issequential? Ascorearr[cnt, 1] : (Ascorearr[cnt,1]+Ascorearr[cnt-1,1])/2;
                         else if ((scoord.x - 1 >= 0 && searchmap[scoord.y, scoord.x - 1] == 0) || (lcoord.x + 1 < mapsize + 1 && searchmap[lcoord.y, lcoord.x + 1] == 0))
-                            score += Ascorearr[cnt, 0];
+                            score += Issequential ? Ascorearr[cnt, 0] : (Ascorearr[cnt, 0] + Ascorearr[cnt - 1, 0]) / 2;
                     }
 
                     // samsam 계산
@@ -408,14 +415,14 @@ public class ControlAISettingRocks : MonoBehaviour
                     // 오목은 따로 계산한다.
                     // 아예 양쪽이 닫힌 오목이어도 점수를 얻는다.
                     // 단 5개가 연속으로 있어야 하고 양옆에 같은 돌이 없어야 한다.
-                    if (cnt == 5)
+
+                    Pair start = new Pair(scoord.y, scoord.x);
+                    Pair end = new Pair(lcoord.y, lcoord.x);
+
+                    bool Issequential = true; // 5개 연속인가?
+
+                    if (cnt != 1)
                     {
-                        // 연속이 끊기면 거기까지 점수로 인정한다.
-                        Pair start = new Pair(scoord.y, scoord.x);
-                        Pair end = new Pair(lcoord.y, lcoord.x);
-
-                        bool Issequential = true; // 5개 연속인가?
-
                         do
                         {
                             start.y++;
@@ -428,44 +435,50 @@ public class ControlAISettingRocks : MonoBehaviour
 
                         }
                         while (start != end);
+                    }
 
-                        if (Issequential && ((scoord.y - 1 >= 0 && searchmap[scoord.y - 1, scoord.x] != 2) && (lcoord.y + 1 < mapsize + 1 && searchmap[lcoord.y + 1, lcoord.x] != 2)))
-                            score += Ascorearr[cnt,1];
+                    if (cnt == 5)
+                    {
+                        // 연속이 끊기면 거기까지 점수로 인정한다.
+
+
+                        if (Issequential && (scoord.y - 1 < 0 || (scoord.y - 1 >= 0 && searchmap[scoord.y - 1, scoord.x] != 2)) && (lcoord.y + 1 >= mapsize + 1 || (lcoord.y + 1 < mapsize + 1 && searchmap[lcoord.y + 1, lcoord.x] != 2)))
+                            score += Ascorearr[cnt, 1];
                     }
 
                     if (cnt < 5)
                     {
 
                         if ((scoord.y - 1 >= 0 && searchmap[scoord.y - 1, scoord.x] == 0) && (lcoord.y + 1 < mapsize + 1 && searchmap[lcoord.y + 1, lcoord.x] == 0))
-                            score += Ascorearr[cnt, 1];
+                            score += Issequential ? Ascorearr[cnt, 1] : (Ascorearr[cnt, 1] + Ascorearr[cnt - 1, 1]) / 2;
                         else if ((scoord.y - 1 >= 0 && searchmap[scoord.y - 1, scoord.x] == 0) || (lcoord.y + 1 < mapsize + 1 && searchmap[lcoord.y + 1, lcoord.x] == 0))
-                            score += Ascorearr[cnt, 0];
-                    }
+                            score += Issequential ? Ascorearr[cnt, 0] : (Ascorearr[cnt, 0] + Ascorearr[cnt - 1, 0]) / 2;
 
-                    // samsam 계산
-                    // 양 끝에만 돌을 추가로 둬 봐서 열린 4가 되면 된다.
-                    // 이게 만족되면 samsam 배열의 해당되는 좌표에 int++
+                        // samsam 계산
+                        // 양 끝에만 돌을 추가로 둬 봐서 열린 4가 되면 된다.
+                        // 이게 만족되면 samsam 배열의 해당되는 좌표에 int++
 
-                    if (cnt == 3 && ((scoord.y - 1 >= 0 && searchmap[scoord.y - 1, scoord.x] == 0) && (lcoord.y + 1 < mapsize + 1 && searchmap[lcoord.y + 1, lcoord.x] == 0)))
-                    {
-
-
-                        if (Mathf.Abs(lcoord.y - scoord.y) == 2 || ((scoord.y - 2 >= 0 && searchmap[scoord.y - 2, scoord.x] == 0) || (lcoord.y + 2 < mapsize + 1 && searchmap[lcoord.y + 2, lcoord.x] == 0)))
+                        if (cnt == 3 && ((scoord.y - 1 >= 0 && searchmap[scoord.y - 1, scoord.x] == 0) && (lcoord.y + 1 < mapsize + 1 && searchmap[lcoord.y + 1, lcoord.x] == 0)))
                         {
-                            // 해당되는 좌표 모두 samsam처리
 
-                            Asamsam[scoord.y, scoord.x]++;
-                            do
+
+                            if (Mathf.Abs(lcoord.y - scoord.y) == 2 || ((scoord.y - 2 >= 0 && searchmap[scoord.y - 2, scoord.x] == 0) || (lcoord.y + 2 < mapsize + 1 && searchmap[lcoord.y + 2, lcoord.x] == 0)))
                             {
-                                scoord.y++;
+                                // 해당되는 좌표 모두 samsam처리
 
-                                if (searchmap[scoord.y, scoord.x] == 2)
-                                    Asamsam[scoord.y, scoord.x]++;
+                                Asamsam[scoord.y, scoord.x]++;
+                                do
+                                {
+                                    scoord.y++;
 
+                                    if (searchmap[scoord.y, scoord.x] == 2)
+                                        Asamsam[scoord.y, scoord.x]++;
+
+                                }
+                                while (scoord != lcoord);
                             }
-                            while (scoord != lcoord);
-                        }
 
+                        }
                     }
                 }
 
@@ -505,14 +518,14 @@ public class ControlAISettingRocks : MonoBehaviour
                     // 오목은 따로 계산한다.
                     // 아예 양쪽이 닫힌 오목이어도 점수를 얻는다.
                     // 단 5개가 연속으로 있어야 하고 양옆에 같은 돌이 없어야 한다.
-                    if (cnt == 5)
+
+                    Pair start = new Pair(scoord.y, scoord.x);
+                    Pair end = new Pair(lcoord.y, lcoord.x);
+
+                    bool Issequential = true; // 5개 연속인가?
+
+                    if (cnt != 1)
                     {
-                        // 연속이 끊기면 거기까지 점수로 인정한다.
-                        Pair start = new Pair(scoord.y, scoord.x);
-                        Pair end = new Pair(lcoord.y, lcoord.x);
-
-                        bool Issequential = true; // 5개 연속인가?
-
                         do
                         {
                             start.y++;
@@ -526,8 +539,15 @@ public class ControlAISettingRocks : MonoBehaviour
 
                         }
                         while (start != end);
+                    }
 
-                        if (Issequential && ((twoIsinmap(new Pair(scoord.y - 1, scoord.x - 1)) && searchmap[scoord.y - 1, scoord.x - 1] != 2) && (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x + 1)) && searchmap[lcoord.y + 1, lcoord.x + 1] != 2)))
+                    if (cnt == 5)
+                    {
+                        // 연속이 끊기면 거기까지 점수로 인정한다.
+                      
+
+                        if (Issequential && (!twoIsinmap(new Pair(scoord.y - 1, scoord.x - 1)) || (twoIsinmap(new Pair(scoord.y - 1, scoord.x - 1)) && searchmap[scoord.y - 1, scoord.x-1] != 2)) &&
+                            (!twoIsinmap(new Pair(scoord.y + 1, scoord.x + 1)) || (twoIsinmap(new Pair(scoord.y + 1, scoord.x + 1)) && searchmap[scoord.y + 1, scoord.x + 1] != 2)))
                             score += Ascorearr[cnt,1];
                     }
 
@@ -535,9 +555,10 @@ public class ControlAISettingRocks : MonoBehaviour
                     {
 
                         if ((twoIsinmap(new Pair(scoord.y-1, scoord.x-1)) && searchmap[scoord.y - 1, scoord.x-1] == 0) && (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x + 1)) && searchmap[lcoord.y + 1, lcoord.x + 1] == 0))
-                            score += Ascorearr[cnt, 1];
+                            score += Issequential ? Ascorearr[cnt, 1] : (Ascorearr[cnt, 1] + Ascorearr[cnt - 1, 1]) / 2;
                         else if ((twoIsinmap(new Pair(scoord.y - 1, scoord.x - 1)) && searchmap[scoord.y - 1, scoord.x - 1] == 0) || (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x + 1)) && searchmap[lcoord.y + 1, lcoord.x + 1] == 0))
-                            score += Ascorearr[cnt, 0];
+                            score += Issequential ? Ascorearr[cnt, 0] : (Ascorearr[cnt, 0] + Ascorearr[cnt - 1, 0]) / 2;
+
                     }
 
                     // samsam 계산
@@ -567,6 +588,7 @@ public class ControlAISettingRocks : MonoBehaviour
                         }
 
                     }
+
                 }
 
         // 역대각선
@@ -606,14 +628,14 @@ public class ControlAISettingRocks : MonoBehaviour
                     // 오목은 따로 계산한다.
                     // 아예 양쪽이 닫힌 오목이어도 점수를 얻는다.
                     // 단 5개가 연속으로 있어야 하고 양옆에 같은 돌이 없어야 한다.
-                    if (cnt == 5)
+
+                    Pair start = new Pair(scoord.y, scoord.x);
+                    Pair end = new Pair(lcoord.y, lcoord.x);
+
+                    bool Issequential = true; // 5개 연속인가?
+
+                    if (cnt != 1)
                     {
-                        // 연속이 끊기면 거기까지 점수로 인정한다.
-                        Pair start = new Pair(scoord.y, scoord.x);
-                        Pair end = new Pair(lcoord.y, lcoord.x);
-
-                        bool Issequential = true; // 5개 연속인가?
-
                         do
                         {
                             start.y++;
@@ -627,8 +649,15 @@ public class ControlAISettingRocks : MonoBehaviour
 
                         }
                         while (start != end);
+                    }
 
-                        if (Issequential && ((twoIsinmap(new Pair(scoord.y - 1, scoord.x + 1)) && searchmap[scoord.y - 1, scoord.x + 1] != 2) && (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x - 1)) && searchmap[lcoord.y + 1, lcoord.x - 1] != 2)))
+                    if (cnt == 5)
+                    {
+                        // 연속이 끊기면 거기까지 점수로 인정한다.
+                       
+
+                        if (Issequential && (!twoIsinmap(new Pair(scoord.y - 1, scoord.x + 1)) || (twoIsinmap(new Pair(scoord.y - 1, scoord.x + 1)) && searchmap[scoord.y - 1, scoord.x + 1] != 2)) &&
+                            (!twoIsinmap(new Pair(scoord.y + 1, scoord.x - 1)) || (twoIsinmap(new Pair(scoord.y + 1, scoord.x - 1)) && searchmap[scoord.y + 1, scoord.x - 1] != 2)))
                             score += Ascorearr[cnt,1];
                     }
 
@@ -636,9 +665,9 @@ public class ControlAISettingRocks : MonoBehaviour
                     {
 
                         if ((twoIsinmap(new Pair(scoord.y - 1, scoord.x + 1)) && searchmap[scoord.y - 1, scoord.x + 1] == 0) && (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x - 1)) && searchmap[lcoord.y + 1, lcoord.x - 1] == 0))
-                            score += Ascorearr[cnt, 1];
+                            score += Issequential ? Ascorearr[cnt, 1] : (Ascorearr[cnt, 1] + Ascorearr[cnt - 1, 1]) / 2;
                         else if ((twoIsinmap(new Pair(scoord.y - 1, scoord.x + 1)) && searchmap[scoord.y - 1, scoord.x + 1] == 0) || (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x - 1)) && searchmap[lcoord.y + 1, lcoord.x - 1] == 0))
-                            score += Ascorearr[cnt, 0];
+                            score += Issequential ? Ascorearr[cnt, 0] : (Ascorearr[cnt, 0] + Ascorearr[cnt - 1, 0]) / 2;
                     }
 
                     // samsam 계산
@@ -724,14 +753,14 @@ public class ControlAISettingRocks : MonoBehaviour
                     // 오목은 따로 계산한다.
                     // 아예 양쪽이 닫힌 오목이어도 점수를 얻는다.
                     // 단 5개가 연속으로 있어야 하고 양옆에 같은 돌이 없어야 한다.
-                    if (cnt == 5)
+
+                    Pair start = new Pair(scoord.y, scoord.x);
+                    Pair end = new Pair(lcoord.y, lcoord.x);
+
+                    bool Issequential = true; // 5개 연속인가?
+
+                    if (cnt != 1)
                     {
-                        // 연속이 끊기면 거기까지 점수로 인정한다.
-                        Pair start = new Pair(scoord.y, scoord.x);
-                        Pair end = new Pair(lcoord.y, lcoord.x);
-
-                        bool Issequential = true; // 5개 연속인가?
-
                         do
                         {
                             start.x++;
@@ -744,8 +773,14 @@ public class ControlAISettingRocks : MonoBehaviour
 
                         }
                         while (start != end);
+                    }
 
-                        if (Issequential && ((scoord.x - 1 >= 0 && searchmap[scoord.y, scoord.x - 1] != 1) && (lcoord.x + 1 < mapsize + 1 && searchmap[lcoord.y, lcoord.x + 1] != 1)))
+                    if (cnt == 5)
+                    {
+                        // 연속이 끊기면 거기까지 점수로 인정한다.
+                      
+
+                        if (Issequential && (scoord.x - 1 < 0 || (scoord.x - 1 >= 0 && searchmap[scoord.y, scoord.x - 1] != 1)) && (lcoord.x + 1 >= mapsize + 1 || (lcoord.x + 1 < mapsize + 1 && searchmap[lcoord.y, lcoord.x + 1] != 1)))
                             score += Dscorearr[cnt,1];
                     }
 
@@ -753,9 +788,9 @@ public class ControlAISettingRocks : MonoBehaviour
                     {
 
                         if ((scoord.x - 1 >= 0 && searchmap[scoord.y, scoord.x - 1] == 0) && (lcoord.x + 1 < mapsize + 1 && searchmap[lcoord.y, lcoord.x + 1] == 0))
-                            score += Dscorearr[cnt, 1];
+                            score += Issequential ? Dscorearr[cnt, 1] : (Dscorearr[cnt, 1] + Dscorearr[cnt - 1, 1]) / 2;
                         else if ((scoord.x - 1 >= 0 && searchmap[scoord.y, scoord.x - 1] == 0) || (lcoord.x + 1 < mapsize + 1 && searchmap[lcoord.y, lcoord.x + 1] == 0))
-                            score += Dscorearr[cnt, 0];
+                            score += Issequential ? Dscorearr[cnt, 0] : (Dscorearr[cnt, 0] + Dscorearr[cnt - 1, 0]) / 2;
                     }
 
                     // samsam 계산
@@ -820,14 +855,14 @@ public class ControlAISettingRocks : MonoBehaviour
                     // 오목은 따로 계산한다.
                     // 아예 양쪽이 닫힌 오목이어도 점수를 얻는다.
                     // 단 5개가 연속으로 있어야 하고 양옆에 같은 돌이 없어야 한다.
-                    if (cnt == 5)
+
+                    Pair start = new Pair(scoord.y, scoord.x);
+                    Pair end = new Pair(lcoord.y, lcoord.x);
+
+                    bool Issequential = true; // 5개 연속인가?
+
+                    if (cnt != 1)
                     {
-                        // 연속이 끊기면 거기까지 점수로 인정한다.
-                        Pair start = new Pair(scoord.y, scoord.x);
-                        Pair end = new Pair(lcoord.y, lcoord.x);
-
-                        bool Issequential = true; // 5개 연속인가?
-
                         do
                         {
                             start.y++;
@@ -840,8 +875,14 @@ public class ControlAISettingRocks : MonoBehaviour
 
                         }
                         while (start != end);
+                    }
 
-                        if (Issequential && ((scoord.y - 1 >= 0 && searchmap[scoord.y - 1, scoord.x] != 1) && (lcoord.y + 1 < mapsize + 1 && searchmap[lcoord.y + 1, lcoord.x] != 1)))
+                    if (cnt == 5)
+                    {
+                        // 연속이 끊기면 거기까지 점수로 인정한다.
+                       
+
+                        if (Issequential && (scoord.y - 1 < 0 || (scoord.y - 1 >= 0 && searchmap[scoord.y - 1, scoord.x] != 1)) && (lcoord.y + 1 >= mapsize + 1 || (lcoord.y + 1 < mapsize + 1 && searchmap[lcoord.y + 1, lcoord.x] != 1)))
                             score += Dscorearr[cnt,1];
                     }
 
@@ -849,9 +890,10 @@ public class ControlAISettingRocks : MonoBehaviour
                     {
 
                         if ((scoord.y - 1 >= 0 && searchmap[scoord.y - 1, scoord.x] == 0) && (lcoord.y + 1 < mapsize + 1 && searchmap[lcoord.y + 1, lcoord.x] == 0))
-                            score += Dscorearr[cnt, 1];
+                            score += Issequential ? Dscorearr[cnt, 1] : (Dscorearr[cnt, 1] + Dscorearr[cnt - 1, 1]) / 2;
                         else if ((scoord.y - 1 >= 0 && searchmap[scoord.y - 1, scoord.x] == 0) || (lcoord.y + 1 < mapsize + 1 && searchmap[lcoord.y + 1, lcoord.x] == 0))
-                            score += Dscorearr[cnt, 0];
+                            score += Issequential ? Dscorearr[cnt, 0] : (Dscorearr[cnt, 0] + Dscorearr[cnt - 1, 0]) / 2;
+
                     }
 
                     // samsam 계산
@@ -916,14 +958,14 @@ public class ControlAISettingRocks : MonoBehaviour
                     // 오목은 따로 계산한다.
                     // 아예 양쪽이 닫힌 오목이어도 점수를 얻는다.
                     // 단 5개가 연속으로 있어야 하고 양옆에 같은 돌이 없어야 한다.
-                    if (cnt == 5)
+
+                    Pair start = new Pair(scoord.y, scoord.x);
+                    Pair end = new Pair(lcoord.y, lcoord.x);
+
+                    bool Issequential = true; // 5개 연속인가?
+
+                    if (cnt != 1)
                     {
-                        // 연속이 끊기면 거기까지 점수로 인정한다.
-                        Pair start = new Pair(scoord.y, scoord.x);
-                        Pair end = new Pair(lcoord.y, lcoord.x);
-
-                        bool Issequential = true; // 5개 연속인가?
-
                         do
                         {
                             start.y++;
@@ -937,8 +979,15 @@ public class ControlAISettingRocks : MonoBehaviour
 
                         }
                         while (start != end);
+                    }
 
-                        if (Issequential && ((twoIsinmap(new Pair(scoord.y - 1, scoord.x - 1)) && searchmap[scoord.y - 1, scoord.x - 1] != 1) && (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x + 1)) && searchmap[lcoord.y + 1, lcoord.x + 1] != 1)))
+                    if (cnt == 5)
+                    {
+                        // 연속이 끊기면 거기까지 점수로 인정한다.
+                    
+
+                        if (Issequential && (!twoIsinmap(new Pair(scoord.y - 1, scoord.x - 1)) || (twoIsinmap(new Pair(scoord.y - 1, scoord.x - 1)) && searchmap[scoord.y - 1, scoord.x - 1] != 1)) &&
+                             (!twoIsinmap(new Pair(scoord.y + 1, scoord.x + 1)) || (twoIsinmap(new Pair(scoord.y + 1, scoord.x + 1)) && searchmap[scoord.y + 1, scoord.x + 1] != 1)))
                             score += Dscorearr[cnt,1];
                     }
 
@@ -946,9 +995,9 @@ public class ControlAISettingRocks : MonoBehaviour
                     {
 
                         if ((twoIsinmap(new Pair(scoord.y - 1, scoord.x - 1)) && searchmap[scoord.y - 1, scoord.x - 1] == 0) && (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x + 1)) && searchmap[lcoord.y + 1, lcoord.x + 1] == 0))
-                            score += Dscorearr[cnt, 1];
+                            score += Issequential ? Dscorearr[cnt, 1] : (Dscorearr[cnt, 1] + Dscorearr[cnt - 1, 1]) / 2;
                         else if ((twoIsinmap(new Pair(scoord.y - 1, scoord.x - 1)) && searchmap[scoord.y - 1, scoord.x - 1] == 0) || (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x + 1)) && searchmap[lcoord.y + 1, lcoord.x + 1] == 0))
-                            score += Dscorearr[cnt, 0];
+                            score += Issequential ? Dscorearr[cnt, 0] : (Dscorearr[cnt, 0] + Dscorearr[cnt - 1, 0]) / 2;
                     }
 
                     // samsam 계산
@@ -1015,14 +1064,14 @@ public class ControlAISettingRocks : MonoBehaviour
                     // 오목은 따로 계산한다.
                     // 아예 양쪽이 닫힌 오목이어도 점수를 얻는다.
                     // 단 5개가 연속으로 있어야 하고 양옆에 같은 돌이 없어야 한다.
-                    if (cnt == 5)
+
+                    Pair start = new Pair(scoord.y, scoord.x);
+                    Pair end = new Pair(lcoord.y, lcoord.x);
+
+                    bool Issequential = true; // 5개 연속인가?
+
+                    if (cnt != 1)
                     {
-                        // 연속이 끊기면 거기까지 점수로 인정한다.
-                        Pair start = new Pair(scoord.y, scoord.x);
-                        Pair end = new Pair(lcoord.y, lcoord.x);
-
-                        bool Issequential = true; // 5개 연속인가?
-
                         do
                         {
                             start.y++;
@@ -1036,8 +1085,15 @@ public class ControlAISettingRocks : MonoBehaviour
 
                         }
                         while (start != end);
+                    }
 
-                        if (Issequential && ((twoIsinmap(new Pair(scoord.y - 1, scoord.x + 1)) && searchmap[scoord.y - 1, scoord.x + 1] != 1) && (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x - 1)) && searchmap[lcoord.y + 1, lcoord.x - 1] != 1)))
+                    if (cnt == 5)
+                    {
+                        // 연속이 끊기면 거기까지 점수로 인정한다.
+                      
+
+                        if (Issequential && (!twoIsinmap(new Pair(scoord.y - 1, scoord.x + 1)) || (twoIsinmap(new Pair(scoord.y - 1, scoord.x + 1)) && searchmap[scoord.y - 1, scoord.x + 1] != 1)) &&
+                          (!twoIsinmap(new Pair(scoord.y + 1, scoord.x - 1)) || (twoIsinmap(new Pair(scoord.y + 1, scoord.x - 1)) && searchmap[scoord.y + 1, scoord.x - 1] != 1)))
                             score += Dscorearr[cnt,1];
                     }
 
@@ -1045,9 +1101,10 @@ public class ControlAISettingRocks : MonoBehaviour
                     {
 
                         if ((twoIsinmap(new Pair(scoord.y - 1, scoord.x + 1)) && searchmap[scoord.y - 1, scoord.x + 1] == 0) && (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x - 1)) && searchmap[lcoord.y + 1, lcoord.x - 1] == 0))
-                            score += Dscorearr[cnt, 1];
+                            score += Issequential ? Dscorearr[cnt, 1] : (Dscorearr[cnt, 1] + Dscorearr[cnt - 1, 1]) / 2;
                         else if ((twoIsinmap(new Pair(scoord.y - 1, scoord.x + 1)) && searchmap[scoord.y - 1, scoord.x + 1] == 0) || (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x - 1)) && searchmap[lcoord.y + 1, lcoord.x - 1] == 0))
-                            score += Dscorearr[cnt, 0];
+                            score += Issequential ? Dscorearr[cnt, 0] : (Dscorearr[cnt, 0] + Dscorearr[cnt - 1, 0]) / 2;
+
                     }
 
                     // samsam 계산
