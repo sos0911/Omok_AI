@@ -457,7 +457,7 @@ public class ControlAISettingRocks : MonoBehaviour
                         {
 
 
-                            if (Mathf.Abs(lcoord.y - scoord.y) == 2 || ((scoord.y - 2 >= 0 && searchmap[scoord.y - 2, scoord.x] == 0) || (lcoord.y + 2 < mapsize + 1 && searchmap[lcoord.y + 2, lcoord.x] == 0)))
+                            if (Mathf.Abs(lcoord.y - scoord.y) != 2 || ((scoord.y - 2 >= 0 && searchmap[scoord.y - 2, scoord.x] == 0) || (lcoord.y + 2 < mapsize + 1 && searchmap[lcoord.y + 2, lcoord.x] == 0)))
                             {
                                 // 해당되는 좌표 모두 samsam처리
 
@@ -563,7 +563,7 @@ public class ControlAISettingRocks : MonoBehaviour
                     if (cnt == 3 && ((twoIsinmap(new Pair(scoord.y - 1, scoord.x - 1)) && searchmap[scoord.y - 1, scoord.x - 1] == 0) && (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x + 1)) && searchmap[lcoord.y + 1, lcoord.x + 1] == 0)))
                     {
 
-                        if (Mathf.Abs(lcoord.y - scoord.y) == 2 || ((ControlAISettingRocks.instance.twoIsinmap(new Pair(scoord.y - 2, scoord.x - 2)) && (searchmap[scoord.y - 2, scoord.x - 2] == 0)) ||
+                        if (Mathf.Abs(lcoord.y - scoord.y) != 2 || ((ControlAISettingRocks.instance.twoIsinmap(new Pair(scoord.y - 2, scoord.x - 2)) && (searchmap[scoord.y - 2, scoord.x - 2] == 0)) ||
                           (ControlAISettingRocks.instance.twoIsinmap(new Pair(lcoord.y + 2, lcoord.x + 2)) && (searchmap[lcoord.y + 2, lcoord.x + 2] == 0))))
                         {
                             // 해당되는 좌표 모두 samsam처리
@@ -672,7 +672,7 @@ public class ControlAISettingRocks : MonoBehaviour
                     if (cnt == 3 && ((twoIsinmap(new Pair(scoord.y - 1, scoord.x + 1)) && searchmap[scoord.y - 1, scoord.x + 1] == 0) && (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x - 1)) && searchmap[lcoord.y + 1, lcoord.x - 1] == 0)))
                     {
 
-                        if (Mathf.Abs(lcoord.y - scoord.y) == 2 || ((ControlAISettingRocks.instance.twoIsinmap(new Pair(scoord.y - 2, scoord.x + 2)) && (searchmap[scoord.y - 2, scoord.x + 2] == 0)) ||
+                        if (Mathf.Abs(lcoord.y - scoord.y) != 2 || ((ControlAISettingRocks.instance.twoIsinmap(new Pair(scoord.y - 2, scoord.x + 2)) && (searchmap[scoord.y - 2, scoord.x + 2] == 0)) ||
                            (ControlAISettingRocks.instance.twoIsinmap(new Pair(lcoord.y + 2, lcoord.x - 2)) && (searchmap[lcoord.y + 2, lcoord.x - 2] == 0))))
                         {
                             // 해당되는 좌표 모두 samsam처리
@@ -898,7 +898,7 @@ public class ControlAISettingRocks : MonoBehaviour
                     if (cnt == 3 && ((scoord.y - 1 >= 0 && searchmap[scoord.y - 1, scoord.x] == 0) && (lcoord.y + 1 < mapsize + 1 && searchmap[lcoord.y + 1, lcoord.x] == 0)))
                     {
 
-                        if (Mathf.Abs(lcoord.y - scoord.y) == 2 || ((scoord.y - 2 >= 0 && searchmap[scoord.y - 2, scoord.x] == 0) || (lcoord.y + 2 < mapsize + 1 && searchmap[lcoord.y + 2, lcoord.x] == 0)))
+                        if (Mathf.Abs(lcoord.y - scoord.y) != 2 || ((scoord.y - 2 >= 0 && searchmap[scoord.y - 2, scoord.x] == 0) || (lcoord.y + 2 < mapsize + 1 && searchmap[lcoord.y + 2, lcoord.x] == 0)))
                         {
                             // 해당되는 좌표 모두 samsam처리
 
@@ -1002,7 +1002,7 @@ public class ControlAISettingRocks : MonoBehaviour
                     if (cnt == 3 && ((twoIsinmap(new Pair(scoord.y - 1, scoord.x - 1)) && searchmap[scoord.y - 1, scoord.x - 1] == 0) && (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x + 1)) && searchmap[lcoord.y + 1, lcoord.x + 1] == 0)))
                     {
 
-                        if (Mathf.Abs(lcoord.y - scoord.y) == 2 || ((ControlAISettingRocks.instance.twoIsinmap(new Pair(scoord.y - 2, scoord.x - 2)) && (searchmap[scoord.y - 2, scoord.x - 2] == 0)) ||
+                        if (Mathf.Abs(lcoord.y - scoord.y) != 2 || ((ControlAISettingRocks.instance.twoIsinmap(new Pair(scoord.y - 2, scoord.x - 2)) && (searchmap[scoord.y - 2, scoord.x - 2] == 0)) ||
                           (ControlAISettingRocks.instance.twoIsinmap(new Pair(lcoord.y + 2, lcoord.x + 2)) && (searchmap[lcoord.y + 2, lcoord.x + 2] == 0))))
                         {
                             // 해당되는 좌표 모두 samsam처리
@@ -1109,7 +1109,7 @@ public class ControlAISettingRocks : MonoBehaviour
                     if (cnt == 3 && ((twoIsinmap(new Pair(scoord.y - 1, scoord.x + 1)) && searchmap[scoord.y - 1, scoord.x + 1] == 0) && (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x - 1)) && searchmap[lcoord.y + 1, lcoord.x - 1] == 0)))
                     {
 
-                        if (Mathf.Abs(lcoord.y - scoord.y) == 2 || ((ControlAISettingRocks.instance.twoIsinmap(new Pair(scoord.y - 2, scoord.x + 2)) && (searchmap[scoord.y - 2, scoord.x + 2] == 0)) ||
+                        if (Mathf.Abs(lcoord.y - scoord.y) != 2 || ((ControlAISettingRocks.instance.twoIsinmap(new Pair(scoord.y - 2, scoord.x + 2)) && (searchmap[scoord.y - 2, scoord.x + 2] == 0)) ||
                           (ControlAISettingRocks.instance.twoIsinmap(new Pair(lcoord.y + 2, lcoord.x - 2)) && (searchmap[lcoord.y + 2, lcoord.x - 2] == 0))))
                         {
                             // 해당되는 좌표 모두 samsam처리

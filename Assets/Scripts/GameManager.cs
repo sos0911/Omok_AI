@@ -230,7 +230,7 @@ public class GameManager : MonoBehaviour
                     if (cnt == 3 && ((scoord.x - 1 >= 0 && curmap[scoord.y, scoord.x - 1] == 0) && (lcoord.x + 1 < mapsize + 1 && curmap[lcoord.y, lcoord.x + 1] == 0)))
                     {
 
-                        if(Mathf.Abs(lcoord.x - scoord.x) == 2 || ((scoord.x - 2 >= 0 && curmap[scoord.y, scoord.x - 2] == 0) || (lcoord.x + 2 < mapsize + 1 && curmap[lcoord.y, lcoord.x + 2] == 0)))
+                        if(Mathf.Abs(lcoord.x - scoord.x) != 2 || ((scoord.x - 2 >= 0 && curmap[scoord.y, scoord.x - 2] == 0) || (lcoord.x + 2 < mapsize + 1 && curmap[lcoord.y, lcoord.x + 2] == 0)))
                         {
                             // 해당되는 좌표 모두 samsam처리
 
@@ -285,7 +285,7 @@ public class GameManager : MonoBehaviour
                     if (cnt == 3 && ((scoord.y - 1 >= 0 && curmap[scoord.y - 1, scoord.x] == 0) && (lcoord.y + 1 < mapsize + 1 && curmap[lcoord.y + 1, lcoord.x] == 0)))
                     {
 
-                        if(Mathf.Abs(lcoord.y - scoord.y) == 2 || ((scoord.y - 2 >= 0 && curmap[scoord.y-2, scoord.x] == 0) || (lcoord.y + 2 < mapsize + 1 && curmap[lcoord.y+2, lcoord.x] == 0)))
+                        if(Mathf.Abs(lcoord.y - scoord.y) != 2 || ((scoord.y - 2 >= 0 && curmap[scoord.y-2, scoord.x] == 0) || (lcoord.y + 2 < mapsize + 1 && curmap[lcoord.y+2, lcoord.x] == 0)))
                         {
                             // 해당되는 좌표 모두 samsam처리
 
@@ -341,7 +341,7 @@ public class GameManager : MonoBehaviour
                     if (cnt == 3 && ((ControlAISettingRocks.instance.twoIsinmap(new Pair(scoord.y - 1, scoord.x - 1)) && curmap[scoord.y - 1, scoord.x - 1] == 0) && (ControlAISettingRocks.instance.twoIsinmap(new Pair(lcoord.y + 1, lcoord.x + 1)) && curmap[lcoord.y + 1, lcoord.x + 1] == 0)))
                     {
 
-                        if(Mathf.Abs(lcoord.y - scoord.y) == 2 || ((ControlAISettingRocks.instance.twoIsinmap(new Pair(scoord.y - 2, scoord.x - 2)) && (curmap[scoord.y-2, scoord.x-2] == 0)) ||
+                        if(Mathf.Abs(lcoord.y - scoord.y) != 2 || ((ControlAISettingRocks.instance.twoIsinmap(new Pair(scoord.y - 2, scoord.x - 2)) && (curmap[scoord.y-2, scoord.x-2] == 0)) ||
                             (ControlAISettingRocks.instance.twoIsinmap(new Pair(lcoord.y + 2 , lcoord.x + 2)) && (curmap[lcoord.y+2, lcoord.x+2] == 0))))
                         {
                             // 해당되는 좌표 모두 samsam처리
@@ -399,7 +399,7 @@ public class GameManager : MonoBehaviour
 
                     if (cnt == 3 && ((ControlAISettingRocks.instance.twoIsinmap(new Pair(scoord.y - 1, scoord.x + 1)) && curmap[scoord.y - 1, scoord.x + 1] == 0) && (ControlAISettingRocks.instance.twoIsinmap(new Pair(lcoord.y + 1, lcoord.x - 1)) && curmap[lcoord.y + 1, lcoord.x - 1] == 0)))
                     {
-                        if (Mathf.Abs(lcoord.y - scoord.y) == 2 || ((ControlAISettingRocks.instance.twoIsinmap(new Pair(scoord.y - 2, scoord.x + 2)) && (curmap[scoord.y - 2, scoord.x + 2] == 0)) ||
+                        if (Mathf.Abs(lcoord.y - scoord.y) != 2 || ((ControlAISettingRocks.instance.twoIsinmap(new Pair(scoord.y - 2, scoord.x + 2)) && (curmap[scoord.y - 2, scoord.x + 2] == 0)) ||
                            (ControlAISettingRocks.instance.twoIsinmap(new Pair(lcoord.y + 2, lcoord.x - 2)) && (curmap[lcoord.y + 2, lcoord.x - 2] == 0))))
                         {
                             // 해당되는 좌표 모두 samsam처리
