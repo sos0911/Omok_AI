@@ -41,6 +41,7 @@ public class GameManager : MonoBehaviour
     public bool IsAIActionEnded; // AI 돌 놓기가 끝났나?
 
     public bool Issamsam = false; // player가 3*3금수를 어겼나?
+    public bool Istimeroverdefeat = false; // player가 시간을 넘겨서 패했나?
 
     public float timer = 0f; // 남은 시간.
     public float turntime = 60f; // 한 턴 시간.
@@ -92,6 +93,15 @@ public class GameManager : MonoBehaviour
         // player의 턴일때는 timer < 0 or turnended
         if (!IsgameOver)
         {
+            // 만약 플레이어가 입력을 시간 내에 안하면 패배
+            if(timer < 0f && curplayerturn && !IsActionEnded)
+            {
+                Istimeroverdefeat = true;
+                controlUI.UIchangeGameoverText("AI");
+                GameManager.instance.gameObject.SetActive(false);
+                return;
+            }
+
             if (!Isturnchanging && (IsActionEnded || IsAIActionEnded))
             {
                 Isturnchanging = true;
@@ -459,7 +469,7 @@ public class GameManager : MonoBehaviour
 
                 if (cnt == 5)
                 {
-                    if (!(ControlAISettingRocks.instance.oneIsinmap(j - 1) && curmap[i, j - 1] == rcolor))
+                    if (!ControlAISettingRocks.instance.oneIsinmap(j - 1) || (ControlAISettingRocks.instance.oneIsinmap(j - 1) && curmap[i, j - 1] != rcolor))
                         return rcolor == 1 ? WhoWin.Player : WhoWin.AI;
                 }
 
@@ -469,7 +479,7 @@ public class GameManager : MonoBehaviour
 
                 if (cnt == 5)
                 {
-                    if (!(ControlAISettingRocks.instance.oneIsinmap(i - 1) && curmap[i-1, j] == rcolor))
+                    if (!ControlAISettingRocks.instance.oneIsinmap(i - 1) || (ControlAISettingRocks.instance.oneIsinmap(i - 1) && curmap[i-1, j] != rcolor))
                         return rcolor == 1 ? WhoWin.Player : WhoWin.AI;
                 }
 
@@ -479,7 +489,7 @@ public class GameManager : MonoBehaviour
 
                 if (cnt == 5)
                 {
-                    if (!(ControlAISettingRocks.instance.twoIsinmap(new Pair(i-1,j-1)) && curmap[i - 1, j-1] == rcolor))
+                    if (!ControlAISettingRocks.instance.twoIsinmap(new Pair(i - 1, j-1)) || (ControlAISettingRocks.instance.twoIsinmap(new Pair(i - 1, j - 1)) && curmap[i-1, j-1] != rcolor))
                         return rcolor == 1 ? WhoWin.Player : WhoWin.AI;
                 }
 
@@ -489,7 +499,7 @@ public class GameManager : MonoBehaviour
 
                 if (cnt == 5)
                 {
-                    if (!(ControlAISettingRocks.instance.twoIsinmap(new Pair(i - 1, j + 1)) && curmap[i - 1, j + 1] == rcolor))
+                    if (!ControlAISettingRocks.instance.twoIsinmap(new Pair(i - 1, j + 1)) || (ControlAISettingRocks.instance.twoIsinmap(new Pair(i - 1, j + 1)) && curmap[i - 1, j + 1] != rcolor))
                         return rcolor == 1 ? WhoWin.Player : WhoWin.AI;
                 }
             }

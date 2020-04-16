@@ -14,7 +14,8 @@ public class ControlAISettingRocks : MonoBehaviour
     // singleton
     public static ControlAISettingRocks instance;
 
-    public int depthlimit = INF; // INF로 가면 제한시간 다 쓰는 iterative deepening이다.
+    // INF로 가면 제한시간 다 쓰는 iterative deepening이다.
+    public int depthlimit = INF; 
 
     public bool scorenullify = false; // 지금 내놓은 답이 무효인가? (타이머가 다돼서 나올때)
 
@@ -106,13 +107,11 @@ public class ControlAISettingRocks : MonoBehaviour
                 totalscore = thisdepthscore;
                 bestdepth = depth;
 
-                //Debug.Log("depth : " + depth + " score : " + totalscore);
 
                 // initialnode에 저장된 bestvalue 갖는 child를 찾아 그 안 coord를 빼옴.
                 foreach (Node child in initialnode.childlist)
                 {
 
-                    //  Debug.Log("child : (" + child.coord.Key + "," + child.coord.Value + ") :: " + child.bestvalue);
 
                     if (child.bestvalue == totalscore)
                     {
@@ -121,16 +120,12 @@ public class ControlAISettingRocks : MonoBehaviour
                     }
                 }
 
-                //Debug.Log("coord : " + totalcoord.Key + "," + totalcoord.Value);
 
             }
 
 
         }
-        
 
-        //Debug.Log("final depth : " + bestdepth + " score : " + totalscore);
-        //Debug.Log("final coord : " + totalcoord.Key + "," + totalcoord.Value);
 
         scorenullify = false;
 
@@ -547,7 +542,7 @@ public class ControlAISettingRocks : MonoBehaviour
                       
 
                         if (Issequential && (!twoIsinmap(new Pair(scoord.y - 1, scoord.x - 1)) || (twoIsinmap(new Pair(scoord.y - 1, scoord.x - 1)) && searchmap[scoord.y - 1, scoord.x-1] != 2)) &&
-                            (!twoIsinmap(new Pair(scoord.y + 1, scoord.x + 1)) || (twoIsinmap(new Pair(scoord.y + 1, scoord.x + 1)) && searchmap[scoord.y + 1, scoord.x + 1] != 2)))
+                            (!twoIsinmap(new Pair(lcoord.y + 1, lcoord.x + 1)) || (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x + 1)) && searchmap[lcoord.y + 1, lcoord.x + 1] != 2)))
                             score += Ascorearr[cnt,1];
                     }
 
@@ -657,7 +652,7 @@ public class ControlAISettingRocks : MonoBehaviour
                        
 
                         if (Issequential && (!twoIsinmap(new Pair(scoord.y - 1, scoord.x + 1)) || (twoIsinmap(new Pair(scoord.y - 1, scoord.x + 1)) && searchmap[scoord.y - 1, scoord.x + 1] != 2)) &&
-                            (!twoIsinmap(new Pair(scoord.y + 1, scoord.x - 1)) || (twoIsinmap(new Pair(scoord.y + 1, scoord.x - 1)) && searchmap[scoord.y + 1, scoord.x - 1] != 2)))
+                           (!twoIsinmap(new Pair(lcoord.y + 1, lcoord.x - 1)) || (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x - 1)) && searchmap[lcoord.y + 1, lcoord.x - 1] != 2)))
                             score += Ascorearr[cnt,1];
                     }
 
@@ -987,8 +982,8 @@ public class ControlAISettingRocks : MonoBehaviour
                     
 
                         if (Issequential && (!twoIsinmap(new Pair(scoord.y - 1, scoord.x - 1)) || (twoIsinmap(new Pair(scoord.y - 1, scoord.x - 1)) && searchmap[scoord.y - 1, scoord.x - 1] != 1)) &&
-                             (!twoIsinmap(new Pair(scoord.y + 1, scoord.x + 1)) || (twoIsinmap(new Pair(scoord.y + 1, scoord.x + 1)) && searchmap[scoord.y + 1, scoord.x + 1] != 1)))
-                            score += Dscorearr[cnt,1];
+                            (!twoIsinmap(new Pair(lcoord.y + 1, lcoord.x + 1)) || (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x + 1)) && searchmap[lcoord.y + 1, lcoord.x + 1] != 1)))
+                                score += Dscorearr[cnt,1];
                     }
 
                     if (cnt < 5)
@@ -1093,7 +1088,7 @@ public class ControlAISettingRocks : MonoBehaviour
                       
 
                         if (Issequential && (!twoIsinmap(new Pair(scoord.y - 1, scoord.x + 1)) || (twoIsinmap(new Pair(scoord.y - 1, scoord.x + 1)) && searchmap[scoord.y - 1, scoord.x + 1] != 1)) &&
-                          (!twoIsinmap(new Pair(scoord.y + 1, scoord.x - 1)) || (twoIsinmap(new Pair(scoord.y + 1, scoord.x - 1)) && searchmap[scoord.y + 1, scoord.x - 1] != 1)))
+                            (!twoIsinmap(new Pair(lcoord.y + 1, lcoord.x - 1)) || (twoIsinmap(new Pair(lcoord.y + 1, lcoord.x - 1)) && searchmap[lcoord.y + 1, lcoord.x - 1] != 1)))
                             score += Dscorearr[cnt,1];
                     }
 

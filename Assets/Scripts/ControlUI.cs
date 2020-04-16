@@ -13,6 +13,7 @@ public class ControlUI : MonoBehaviour
     public GameObject ThinkingAIText;
 
     private Text WhowinsText;
+    private Text DesciptionText;
 
     private void Start()
     {
@@ -20,6 +21,7 @@ public class ControlUI : MonoBehaviour
         // getcomponent 함수는 특정 오브젝트의 editor에 표시되는 것들 중 일부를 가져오는 거다.
         // 자식을 가져오는 게 아님!
         WhowinsText = GameoverPanel.gameObject.transform.GetChild(0).gameObject.GetComponent<Text>();
+        DesciptionText= GameoverPanel.gameObject.transform.GetChild(1).gameObject.GetComponent<Text>();
         GameManager.instance.GetcacheofUI();
     }
 
@@ -41,11 +43,14 @@ public class ControlUI : MonoBehaviour
             WhowinsText.text = str + " wins!";
 
         if (GameManager.instance.Issamsam)
-            WhowinsText.text += "\n3*3 금수를 어기셨습니다.";
+            DesciptionText.text = "3*3 금수를 어기셨습니다.";
+
+        if (GameManager.instance.Istimeroverdefeat)
+            DesciptionText.text = "제한시간 내에 입력이 없어 패배하셨습니다.";
+
 
         GameoverPanel.SetActive(true);
     }
-
 
     public void RestartGame()
     {
